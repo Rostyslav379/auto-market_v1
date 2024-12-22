@@ -4,6 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    env(MONGODB_URL): ''
+    env(MONGODB_DB): ''
 
 services:
     # default configuration for services in *this* file
@@ -20,5 +22,28 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\Security\UserProvider:
+        arguments:
+            $userRepository: '@App\Repository\UserRepository'
+
+    App\Repository\UserRepository:
+        factory: [ '@doctrine_mongodb.odm.document_manager', getRepository ]
+        arguments:
+            - App\Document\User
+
+    App\Repository\CarRepository:
+        factory: [ '@doctrine_mongodb.odm.document_manager', getRepository ]
+        arguments:
+            - App\Document\Car
+
+    App\Repository\MarkRepository:
+        factory: [ '@doctrine_mongodb.odm.document_manager', getRepository ]
+        arguments:
+            - App\Document\Mark
+
+    App\Repository\ModelRepository:
+        factory: [ '@doctrine_mongodb.odm.document_manager', getRepository ]
+        arguments:
+            - App\Document\Model
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
