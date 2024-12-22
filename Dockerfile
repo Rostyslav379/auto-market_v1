@@ -1,38 +1,31 @@
-# Используем PHP 8.2
 FROM php:8.2-fpm
 
-# Устанавливаем зависимости
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
-    libicu-dev \
+    libpq-dev \
+    libonig-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libfreetype6-dev \
     libzip-dev \
     zip \
-    libonig-dev \
-    libpq-dev \
-    && docker-php-ext-install intl pdo pdo_mysql zip opcache
+    curl
 
-# Устанавливаем расширение MongoDB
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-install pdo pdo_mysql mysqli mbstring zip exif pcntl bcmath gd
+
 RUN pecl install mongodb \
     && docker-php-ext-enable mongodb
 
-# Устанавливаем Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.1 /usr/bin/composer /usr/bin/composer
 
-# Устанавливаем рабочую директорию
 WORKDIR /var/www/symfony
 
-# Копируем проект
-COPY . .
+COPY . /var/www/symfony
 
-# Устанавливаем зависимости
-RUN composer install --no-dev --optimize-autoloader
-
-# Устанавливаем права доступа
 RUN chown -R www-data:www-data /var/www/symfony
 
-# Используем порт 9000 для PHP-FPM
 EXPOSE 9000
-
-# Запускаем PHP-FPM
 CMD ["php-fpm"]
